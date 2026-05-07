@@ -42,35 +42,28 @@ const SuiviDocuments = () => {
         setTrackingData(null);
 
         try {
-            // TODO: Remplacer ceci par le véritable appel vers l'API externe de l'autre application
-            // const response = await fetch(`${import.meta.env.VITE_EXTERNAL_API_URL}/api/tracking/${reference}`);
-            // if (!response.ok) throw new Error("Demande introuvable avec cette référence.");
-            // const data = await response.json();
+            // Appel à l'API externe réelle
+            const response = await fetch(`https://e-service-api-ekv9.onrender.com/api/tracking/${reference}`);
             
-            // --- SIMULATION API CALL POUR DÉMONSTRATION ---
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Simulation d'une erreur si on tape "erreur"
-            if (reference.toLowerCase() === 'erreur') {
-                throw new Error("Aucun dossier trouvé pour cette référence dans nos systèmes.");
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error("Aucun dossier trouvé pour cette référence.");
+                }
+                throw new Error("Une erreur est survenue lors de la récupération des données.");
             }
-
-            // Simulation d'une réponse de l'API externe
-            const mockData: TrackingData = {
-                reference: reference.toUpperCase(),
-                serviceName: "Demande de Passeport Biométrique",
-                status: "En cours",
-                applicantName: "Jean Dupont",
-                submissionDate: "12 Octobre 2024",
-                steps: [
-                    { id: 1, title: "Dépôt du dossier", date: "12 Octobre 2024", status: "completed", description: "Votre dossier a été réceptionné avec succès sur le portail des services." },
-                    { id: 2, title: "Vérification des documents", date: "14 Octobre 2024", status: "completed", description: "Les documents fournis sont conformes et ont été validés." },
-                    { id: 3, title: "Traitement en cours", date: "En attente", status: "current", description: "Votre demande est actuellement en cours de traitement par l'administration compétente." },
-                    { id: 4, title: "Prêt pour retrait", date: "-", status: "pending", description: "Le document sera bientôt disponible pour retrait." },
-                ]
-            };
             
-            setTrackingData(mockData);
+            const data = await response.json();
+            
+            // On s'assure que les données reçues correspondent à notre interface TrackingData
+            // Si l'API retourne une structure différente, on peut la mapper ici
+            setTrackingData({
+                reference: data.reference || reference.toUpperCase(),
+                serviceName: data.serviceName || "Service Administratif",
+                status: data.status || "En cours",
+                applicantName: data.applicantName || "Non spécifié",
+                submissionDate: data.submissionDate || "Inconnue",
+                steps: data.steps || []
+            });
         } catch (err: any) {
             setError(err.message || "Une erreur est survenue lors de la communication avec le serveur.");
         } finally {
