@@ -1,0 +1,17 @@
+{
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://188.165.77.237:5007/api/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "http://188.165.77.237:5007/uploads/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/frontend/index.html"
+    }
+  ]
+}
