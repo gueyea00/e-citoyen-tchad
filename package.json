@@ -1,5 +1,11 @@
 {
-  "dependencies": {
-    "@tailwindcss/postcss": "^4.2.4"
+  "name": "e-citoyen-td",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build"
   }
 }
