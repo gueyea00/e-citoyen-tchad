@@ -46,6 +46,7 @@ const SuiviDocuments = () => {
             const response = await fetch(`https://e-service-api-ekv9.onrender.com/api/tracking/${reference}`);
             
             if (!response.ok) {
+                setTrackingData(null); // S'assurer que les données précédentes sont effacées
                 if (response.status === 404) {
                     throw new Error("Aucun dossier trouvé pour cette référence.");
                 }
