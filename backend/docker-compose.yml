@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: e_citoyen_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_password
+      POSTGRES_DB: ecitoyen_db
+    ports:
+      - "5437:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d ecitoyen_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: e_citoyen_backend
+    ports:
+      - "5002:5000"
+    environment:
+      - PORT=5000
+      # Attention, ici on se connecte au nom du conteneur "db" sur le port interne 5432, pas e-citoyen-backend.onrender.com!
+      - DATABASE_URL=postgresql://admin:admin_password@db:5432/ecitoyen_db?schema=public
+      - JWT_SECRET=supersécurisé
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      db:
+        condition: service_healthy
+    # Force la synchronisation de la DB avant de démarrer le serveur
+    command: sh -c "npx prisma db push && npm run dev"
+
+volumes:
+  pgdata:

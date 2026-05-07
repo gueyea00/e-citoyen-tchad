@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Service {
+  id             String           @id @default(uuid())
+  slug           String           @unique
+  titre_fr       String
+  titre_ar       String?
+  titre_en       String?
+  desc_fr        String
+  desc_ar        String?
+  desc_en        String?
+  direction_id   String
+  direction      Direction        @relation(fields: [direction_id], references: [id])
+  etapes         EtapeProcessus[]
+  videos         Video[]
+  documents      Document[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model Direction {
+  id             String           @id @default(uuid())
+  nom_fr         String
+  nom_ar         String?
+  nom_en         String?
+  adresse        String?
+  telephone      String?
+  email          String?
+  horaires       String?
+  gps_lat        Float?
+  gps_lng        Float?
+  services       Service[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model EtapeProcessus {
+  id             String           @id @default(uuid())
+  ordre          Int
+  titre_fr       String
+  titre_ar       String?
+  titre_en       String?
+  desc_fr        String
+  desc_ar        String?
+  desc_en        String?
+  duree          String?
+  docs_requis    String?
+  service_id     String
+  service        Service          @relation(fields: [service_id], references: [id], onDelete: Cascade)
+}
+
+model Video {
+  id             String           @id @default(uuid())
+  langue         String           // 'fr', 'ar', 'en'
+  url            String
+  type           String           // 'youtube', 'vimeo', 'local'
+  titre          String?
+  service_id     String
+  service        Service          @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@unique([service_id, langue])
+}
+
+model Document {
+  id             String           @id @default(uuid())
+  titre_fr       String
+  titre_ar       String?
+  titre_en       String?
+  fichier_url    String
+  format         String           // 'PDF', 'DOCX'
+  langues        String[]         // Array de langues ['fr', 'ar', 'en']
+  taille         Int?             // en bytes
+  service_id     String?
+  service        Service?         @relation(fields: [service_id], references: [id], onDelete: SetNull)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model CmsConfig {
+  id             String           @id @default(uuid())
+  cle            String           @unique
+  valeur         String           // Stocké en JSON
+  derniere_modif DateTime         @updatedAt
+}
+
+model AdminUser {
+  id             String           @id @default(uuid())
+  email          String           @unique
+  mot_de_passe   String           // hash
+  role           String           // 'SUPER_ADMIN', 'EDITEUR', 'LECTEUR'
+  actif          Boolean          @default(true)
+  derniere_conn  DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model ChatbotLog {
+  id             String           @id @default(uuid())
+  session_id     String
+  langue         String
+  messages       String           // JSON string of conversation array
+  timestamp      DateTime         @default(now())
+}
